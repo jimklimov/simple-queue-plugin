@@ -59,43 +59,49 @@ public class SimpleQueueComparator implements Comparator<Queue.BuildableItem> {
      * @param longB Id of less important Queue.Item
      */
     public void addDesire(long longA, long longB) {
-        List<Long> bList;
-        if (!moveDesires.containsKey(longA)) {
-            bList = new ArrayList<>();
-            moveDesires.put(longA, bList);
-        } else {
-            bList = moveDesires.get(longA);
-        }
-        if (bList != null) {
-            if (bList.isEmpty()) {
-                bList.add(longB);
+        synchronized (this) {
+            List<Long> bList;
+            if (!moveDesires.containsKey(longA)) {
+                bList = new ArrayList<>();
+                moveDesires.put(longA, bList);
             } else {
-                if (!bList.contains(longB)) {
+                bList = moveDesires.get(longA);
+            }
+            if (bList != null) {
+                if (bList.isEmpty()) {
                     bList.add(longB);
+                } else {
+                    if (!bList.contains(longB)) {
+                        bList.add(longB);
+                    }
+                }
+                // Cleaning of previous order
+                List<Long> aList = moveDesires.get(longB);
+                if (aList != null && aList.contains(longA)) {
+                    aList.remove(longA);
+                    if (aList.isEmpty()) {
+                        moveDesires.remove(longB);
+                    }
                 }
             }
-            // Cleaning of previous order
-            List<Long> aList = moveDesires.get(longB);
-            if (aList != null && aList.contains(longA)) {
-                aList.remove(longA);
-                if (aList.isEmpty()) {
-                    moveDesires.remove(longB);
-                }
-            }
+            changedDesires = true;
         }
-        changedDesires = true;
     }
 
     @VisibleForTesting
     public void removeDesireOfKey(long id) {
-        moveDesires.remove(id);
-        changedDesires = true;
+        synchronized (this) {
+            moveDesires.remove(id);
+            changedDesires = true;
+        }
     }
 
     @VisibleForTesting
     public void resetDesires() {
-        moveDesires.clear();
-        changedDesires = true;
+        synchronized (this) {
+            moveDesires.clear();
+            changedDesires = true;
+        }
     }
 
     /** Signal to {@link SimpleQueueSorter} that some changes
