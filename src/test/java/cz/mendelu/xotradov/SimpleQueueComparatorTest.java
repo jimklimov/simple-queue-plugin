@@ -4,12 +4,25 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Queue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class SimpleQueueComparatorTest {
 
-    SimpleQueueComparator comparator = SimpleQueueComparator.getInstance();
+    private SimpleQueueComparator comparator;
+
+    @BeforeEach
+    void setUp() {
+        comparator = SimpleQueueComparator.getInstance();
+        comparator.resetDesires();
+    }
+
+    @AfterEach
+    void tearDown() {
+        comparator.resetDesires();
+    }
 
     @Test
     public void getInstance() {
@@ -60,7 +73,6 @@ public class SimpleQueueComparatorTest {
         assertFalse(comparator.hasDesiresFor(1));
         comparator.addDesire(1, 2);
         assertTrue(comparator.hasDesiresFor(1));
-        comparator.resetDesires();
     }
 
     @Test
@@ -81,7 +93,6 @@ public class SimpleQueueComparatorTest {
 
     @Test
     public void removeStaleReferences_removesFromValueLists() {
-        comparator.resetDesires();
         // Set up: item 10 should precede items 20 and 30
         //          item 40 should precede item 20
         // So desires are: 10 -> [20, 30], 40 -> [20]
@@ -105,12 +116,10 @@ public class SimpleQueueComparatorTest {
 
         // Item 40's desire list was [20], now empty -> key removed entirely
         assertFalse(comparator.hasDesiresFor(40));
-        comparator.resetDesires();
     }
 
     @Test
     public void removeStaleReferences_multipleDepartures() {
-        comparator.resetDesires();
         // Simulate: item 5 should precede items 1, 2, 3
         comparator.addDesire(5, 1);
         comparator.addDesire(5, 2);
@@ -125,6 +134,5 @@ public class SimpleQueueComparatorTest {
         assertTrue(snapshot.containsKey(5L));
         assertEquals(1, snapshot.get(5L).size());
         assertTrue(snapshot.get(5L).contains(2L));
-        comparator.resetDesires();
     }
 }
