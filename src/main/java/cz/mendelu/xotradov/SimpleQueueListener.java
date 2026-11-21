@@ -8,24 +8,24 @@ import hudson.model.queue.QueueListener;
 @Extension
 public class SimpleQueueListener extends QueueListener {
     /**
-     * {@inheritDoc}
+     * {@inheritDoc}<br/>
      *
-     * <p>For {@link SimpleQueueSorter} logic, this override method
+     * For {@link SimpleQueueSorter} logic, this override method
      * actively forgets information about the departed queue item
-     * from {@code SimpleQueueComparator#moveDesires} table.</p>
+     * from {@code SimpleQueueComparator#moveDesires} table.
      *
      * @param li    The item which left the queue
      *              (canceled or promoted to a running build)
      *
-     * @see SimpleQueueComparator#removeStaleReferences
+     * @see SimpleQueueComparator#removeDesiresForKey
      * @see SimpleQueueComparator#removeDesireOfKey
+     * @see SimpleQueueComparator#removeStaleReferences
      */
     @Override
     public void onLeft(Queue.LeftItem li) {
         long id = li.getId();
         SimpleQueueComparator comparator = SimpleQueueComparator.getInstance();
-        comparator.removeDesireOfKey(id);
-        comparator.removeStaleReferences(id);
+        comparator.removeDesiresForKey(id);
         super.onLeft(li);
     }
 }

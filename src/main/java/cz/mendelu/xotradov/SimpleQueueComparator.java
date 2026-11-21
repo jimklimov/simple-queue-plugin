@@ -107,10 +107,32 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
     }
 
     /**
+     * Forget both that queue item {@code id} expressed any {@link #moveDesires}
+     * to have higher priority than other items, and that other items expressed
+     * any priority over this item.<br/>
+     *
+     * Use when an item leaves the queue (is promoted to a build or canceled).
+     *
+     * @param id    ID of {@link Queue.Item} to be forgotten
+     *
+     * @see #removeDesireOfKey
+     * @see #removeStaleReferences
+     * @see SimpleQueueListener#onLeft
+     */
+    @VisibleForTesting
+    public void removeDesiresForKey(long id) {
+        // Technically, these two sides of forgetting are different,
+        // and we may find use-cases for doing only one action - so
+        // the logic is not collapsed into a single method right away.
+        removeDesireOfKey(id);
+        removeStaleReferences(id);
+    }
+
+    /**
      * Forget that queue item {@code id} expressed any {@link #moveDesires}
      * to have higher priority than other items.
      *
-     * @param id
+     * @param id    ID of {@link Queue.Item} to be forgotten
      *
      * @see #removeStaleReferences
      * @see SimpleQueueListener#onLeft
@@ -129,7 +151,7 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      * (promoted to a build or canceled).  Entries whose value list becomes
      * empty after such removal are also removed to keep the map compact.
      *
-     * @param id
+     * @param id    ID of {@link Queue.Item} to be forgotten
      *
      * @see #removeDesireOfKey
      * @see SimpleQueueListener#onLeft
@@ -166,8 +188,8 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      * Sorts the NotWaitingItem entries (BlockedItem and BuildableItem) within the given list
      * in place, using the comparator's desires. Items that are not NotWaitingItem (e.g.
      * WaitingItem) are left in their original position, with the sorted NotWaitingItems
-     * placed between the before/after groups.
-     * <p>
+     * placed between the before/after groups.<br/>
+     *
      * The sort order matches the widget display: lower priority at the top (start of list),
      * higher priority at the bottom (end of list). The comparator returns -1 for higher
      * priority, so we reverse the arguments to achieve the display order.
