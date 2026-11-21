@@ -158,18 +158,11 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      */
     @VisibleForTesting
     public void removeStaleReferences(long id) {
-        // Collect keys for removal first to avoid ConcurrentModificationException
-        // when removing empty entries from the Hashtable during iteration.
-        List<Long> emptyKeys = new ArrayList<>();
-        moveDesires.forEach((key, list) -> {
-            list.remove(Long.valueOf(id));
-            if (list.isEmpty()) {
-                emptyKeys.add(key);
-            }
-        });
-        for (Long key : emptyKeys) {
-            moveDesires.remove(key);
-        }
+        // Hashtable.values() is a synchronized view, so removeIf holds the
+        // table lock for the whole pass, avoiding a race where addDesire
+        // could restore an entry we are about to delete.
+        Long boxed = id;
+        moveDesires.values().removeIf(list -> { list.remove(boxed); return list.isEmpty(); });
     }
 
     /**
