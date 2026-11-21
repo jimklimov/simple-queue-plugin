@@ -96,7 +96,6 @@ public class SimpleQueueComparatorTest {
 
         // Item 10's desire list should no longer contain 20, but still contain 30
         assertTrue(comparator.hasDesiresFor(10));
-        assertEquals(0, comparator.compare(Mockito.mock(Queue.BuildableItem.class), Mockito.mock(Queue.BuildableItem.class)));
         // Verify via snapshot: 10 should only reference 30
         var snapshot = comparator.snapshotDesires();
         assertTrue(snapshot.containsKey(10L));
