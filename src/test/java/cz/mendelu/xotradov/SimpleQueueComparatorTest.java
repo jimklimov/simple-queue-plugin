@@ -135,4 +135,32 @@ public class SimpleQueueComparatorTest {
         assertEquals(1, snapshot.get(5L).size());
         assertTrue(snapshot.get(5L).contains(2L));
     }
+
+    @Test
+    public void onLeft_cleansUpAllDesires() {
+        // Set up: item 10 should precede items 20 and 30
+        //          item 20 should precede item 40
+        // So desires are: 10 -> [20, 30], 20 -> [40]
+        comparator.addDesire(10, 20);
+        comparator.addDesire(10, 30);
+        comparator.addDesire(20, 40);
+
+        // Simulate item 20 leaving the queue via the listener
+        Queue.LeftItem leftItem = Mockito.mock(Queue.LeftItem.class);
+        when(leftItem.getId()).thenReturn(20L);
+
+        SimpleQueueListener listener = new SimpleQueueListener();
+        listener.onLeft(leftItem);
+
+        // Item 20 should be removed as a key (no longer expresses desires)
+        assertFalse(comparator.hasDesiresFor(20));
+
+        // Item 10's desire list should no longer contain 20, but still contain 30
+        assertTrue(comparator.hasDesiresFor(10));
+        var snapshot = comparator.snapshotDesires();
+        assertTrue(snapshot.containsKey(10L));
+        assertEquals(1, snapshot.get(10L).size());
+        assertTrue(snapshot.get(10L).contains(30L));
+        assertFalse(snapshot.get(10L).contains(20L));
+    }
 }
