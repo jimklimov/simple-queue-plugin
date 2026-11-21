@@ -110,7 +110,7 @@ public class SimpleQueueComparatorTest {
     }
 
     @Test
-    public void removeStaleReferences_removesStaleKeyReferences() {
+    public void removeStaleReferences_multipleDepartures() {
         comparator.resetDesires();
         // Simulate: item 5 should precede items 1, 2, 3
         comparator.addDesire(5, 1);
