@@ -69,11 +69,8 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      *         AND that list contains {@code longB}; {@code false} otherwise
      */
     private boolean isFirstItemOverSecond(long longA, long longB) {
-        if (moveDesires.get(longA) != null) {
-            return moveDesires.get(longA).contains(longB);
-        } else {
-            return false;
-        }
+        List<Long> after = moveDesires.get(longA);
+        return (after != null && after.contains(longB));
     }
 
     /**
