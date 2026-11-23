@@ -119,7 +119,6 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      * @see #removeStaleReferences
      * @see SimpleQueueListener#onLeft
      */
-    @VisibleForTesting
     public void removeDesiresForKey(long id) {
         // Technically, these two sides of forgetting are different,
         // and we may find use-cases for doing only one action - so
