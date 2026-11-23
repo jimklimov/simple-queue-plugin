@@ -129,7 +129,6 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      * @see #removeStaleReferences
      * @see SimpleQueueListener#onLeft
      */
-    @VisibleForTesting
     public void removeDesiresForKey(long id) {
         // Technically, these two sides of forgetting are different,
         // and we may find use-cases for doing only one action - so
@@ -168,9 +167,15 @@ public class SimpleQueueComparator implements Comparator<Queue.Item> {
      */
     @VisibleForTesting
     public void removeStaleReferences(long id) {
-        // Hashtable.values() is a synchronized view, so removeIf holds the
-        // table lock for the whole pass, avoiding a race where addDesire
-        // could restore an entry we are about to delete.
+        // Known, accepted race: removeIf holds the Hashtable lock, but that does
+        // NOT exclude addDesire() (HTTP thread), which modifies a fetched list
+        // without a lock. If we (queue thread) empty and remove that list
+        // meanwhile, the manual move is lost. Low risk: the window is tiny, the
+        // item just falls back to automatic order (the user can repeat the move),
+        // stale IDs are ignored by the sorter, and a possible ArrayList exception
+        // is contained (logged by Jenkins for onLeft, error response for the
+        // move). No locking is added on purpose, to keep the queue path free of
+        // contention.
         Long boxed = id;
         moveDesires.values().removeIf(list -> { list.remove(boxed); return list.isEmpty(); });
     }
